@@ -1,20 +1,20 @@
 'use strict'
 
 import { openModal, closeModal } from './modal.js'
-import { readCustomers, createCustomer, deleteCustomer } from './customers.js'
+import { readCustomers, createCustomer, deleteCustomer, updateCustomer } from './customers.js'
 
 /*** Funções ***/
 
-const createRow = (customer) => {
+const createRow = ({nome, email, celular, cidade, id} ) => {
     const row = document.createElement('tr')
     row.innerHTML = `
-        <td>${customer.nome}</td>
-        <td>${customer.email}</td>
-        <td>${customer.celular}</td>
-        <td>${customer.cidade}</td>
+        <td>${nome}</td>
+        <td>${email}</td>
+        <td>${celular}</td>
+        <td>${cidade}</td>
         <td>
-            <button type="button" class="button green" id="editar-${customer.id}">Editar</button>
-            <button type="button" class="button red" id="excluir-${customer.id}">Excluir</button>
+            <button type="button" class="button green" onclick="editCustomer(${id})">Editar</button>
+            <button type="button" class="button red" onclick="delCustomer(${id})">Excluir</button>
         </td>
     `
 
@@ -36,6 +36,8 @@ const updateTable = async () => {
 
 }
 
+const isEdit = () => document.getElementById('nome').hasAttribute('data-id')
+
 const saveCustomer = async () => {
     // Criar um json com as informações do cliente
     const customer = {
@@ -48,8 +50,13 @@ const saveCustomer = async () => {
 
     }
 
-    // Enviar json para o Servidor API
-    await createCustomer(customer)
+    if (isEdit()){
+        customer.id = document.getElementById('nome').dataset.id
+        await updateCustomer(customer)
+
+    } else {
+        await createCustomer(customer)
+    }
 
     // Fechar a modal
     closeModal()
@@ -58,26 +65,52 @@ const saveCustomer = async () => {
     updateTable()
 }
 
-const actionCustomer = async (event) => {
-    if (event.target.type == 'button') {
-
-        const [action, customerId] = event.target.id.split('-')
-
-        if (action == 'editar') {
-            // Função para editar o cliente
-
-
-        } else if (action == 'excluir') {
-            // Função para deletar o cliente
-            await deleteCustomer(customerId)
-            updateTable()
-
-        }
-
-        console.log(action)
-    }
-
+const fillForm = (customer) => {
+    document.getElementById('nome').value = customer.nome
+    document.getElementById('email').value = customer.email
+    document.getElementById('celular').value = customer.celular
+    document.getElementById('cidade').value = customer.cidade
+    document.getElementById('nome').dataset.id = customer.id
 }
+
+globalThis.editCustomer = async (id) => {
+    // Armazenar as informações do cliente selecionado em uma variável
+    const customer = await readCustomers(id)
+
+    console.log(customer)
+    // Preencher o formulário com as informações
+    fillForm(customer)
+    // Abrir a modal no estado de edição
+
+    openModal()
+}
+
+globalThis.delCustomer = async (id) => {
+
+    await deleteCustomer(id)
+    updateTable()
+}
+
+// const actionCustomer = async (event) => {
+//     if (event.target.type == 'button') {
+
+//         const [action, customerId] = event.target.id.split('-')
+
+//         if (action == 'editar') {
+//             //Função para editar o cliente
+            
+
+//         } else if (action == 'excluir') {
+//             // Função para deletar o cliente
+//             await deleteCustomer(customerId)
+//             updateTable()
+
+//         }
+
+//         console.log(action)
+//     }
+
+// }
 
 updateTable()
 
@@ -87,4 +120,4 @@ document.getElementById('cadastrarCliente').addEventListener('click', openModal)
 
 document.getElementById('salvar').addEventListener('click', saveCustomer)
 
-document.getElementById('customers-container').addEventListener('click', actionCustomer)
+// document.getElementById('customers-container').addEventListener('click', actionCustomer)
