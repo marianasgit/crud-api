@@ -1,7 +1,6 @@
 'use strict'
 
-
-const url = 'https://testeleonid.herokuapp.com/clientes'
+const url = 'http://testeleonid.herokuapp.com/clientes'
 
 const createCustomer = async (customer) => {
     const options = {

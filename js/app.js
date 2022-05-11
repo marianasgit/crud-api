@@ -5,7 +5,7 @@ import { readCustomers, createCustomer, deleteCustomer, updateCustomer } from '.
 
 /*** Funções ***/
 
-const createRow = ({nome, email, celular, cidade, id} ) => {
+const createRow = ({nome, email, celular, cidade, id}) => {
     const row = document.createElement('tr')
     row.innerHTML = `
         <td>${nome}</td>
@@ -13,8 +13,8 @@ const createRow = ({nome, email, celular, cidade, id} ) => {
         <td>${celular}</td>
         <td>${cidade}</td>
         <td>
-            <button type="button" class="button green" onclick="editCustomer(${id})">Editar</button>
-            <button type="button" class="button red" onclick="delCustomer(${id})">Excluir</button>
+            <button type="button" class="button green" onclick="editCustomer(${id})">editar</button>
+            <button type="button" class="button red" onclick="delCustomer(${id})">excluir</button>
         </td>
     `
 
@@ -38,7 +38,11 @@ const updateTable = async () => {
 
 const isEdit = () => document.getElementById('nome').hasAttribute('data-id')
 
+
 const saveCustomer = async () => {
+
+    const form = document.getElementById('modal-form');
+
     // Criar um json com as informações do cliente
     const customer = {
 
@@ -46,17 +50,23 @@ const saveCustomer = async () => {
         "nome"    : document.getElementById('nome').value,
         "email"   : document.getElementById('email').value,
         "celular" : document.getElementById('celular').value,
-        "cidade"  : document.getElementById('cidade').value
+        "cidade"  : document.getElementById('cidade').value,
+        "foto"    : document.getElementById('modal-image').src
 
     }
 
-    if (isEdit()){
-        customer.id = document.getElementById('nome').dataset.id
-        await updateCustomer(customer)
+    if (form.reportValidity()){
+        
+        if (isEdit()){
+            customer.id = document.getElementById('nome').dataset.id
+            await updateCustomer(customer)
+    
+        } else {
+            createCustomer(customer)
+        }
 
-    } else {
-        await createCustomer(customer)
     }
+
 
     // Fechar a modal
     closeModal()
@@ -71,6 +81,7 @@ const fillForm = (customer) => {
     document.getElementById('celular').value = customer.celular
     document.getElementById('cidade').value = customer.cidade
     document.getElementById('nome').dataset.id = customer.id
+    document.getElementById('modal-image').src = customer.foto
 }
 
 globalThis.editCustomer = async (id) => {
@@ -112,6 +123,17 @@ globalThis.delCustomer = async (id) => {
 
 // }
 
+const maskCelular = ({target}) => {
+    
+    let text = target.value
+
+    text = text.replace(/[^0-9]/g,'')
+    text = text.replace(/(.{2})(.{5})(.{4})/,'($1) $2-$3')
+    text = text.replace(/(.{15})(.*)/, '$1')
+    
+    target.value = text
+}
+
 updateTable()
 
 /*** Eventos ***/
@@ -119,5 +141,7 @@ updateTable()
 document.getElementById('cadastrarCliente').addEventListener('click', openModal)
 
 document.getElementById('salvar').addEventListener('click', saveCustomer)
+
+document.getElementById('celular').addEventListener('keyup', maskCelular)
 
 // document.getElementById('customers-container').addEventListener('click', actionCustomer)
